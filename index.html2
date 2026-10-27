@@ -1,0 +1,26 @@
+const BIRTHDAY_CONFIG = {
+    // 1. 顶部大标题
+    title: "祝 星月 生日快乐！", 
+    
+    // 2. 祝福语与想说的话（按数组添加，每一行对应一段话）
+    blessings: [
+        "在这个特别的日子里，愿所有的美好与幸运都与你相伴。",
+        "感谢你出现在我的生命里，带给我无数的温暖与感动。",
+        "愿你在新的一岁里，星河璀璨，所愿皆所得！"
+    ],
+
+    // 3. 视频列表（严格按您草图居中垂直排列：标题 + 视频）
+    videos: [
+        {
+            title: "视频一：精彩回忆录",
+            // 填入视频文件的地址（本地视频写 ./video1.mp4，网络链接直接粘贴链接）
+            url: "https://assets.mixkit.co/videos/preview/mixkit-bright-fireworks-in-the-night-sky-42845-large.mp4",
+            poster: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=1000&auto=format&fit=crop"
+        },
+        {
+            title: "视频二：生贺特别独家独白",
+            url: "https://assets.mixkit.co/videos/preview/mixkit-lights-of-a-big-city-at-night-41484-large.mp4",
+            poster: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1000&auto=format&fit=crop"
+        }
+    ]
+};
