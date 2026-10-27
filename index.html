@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday! 🎂 生日快乐特别献礼</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        romanticBg: '#0F0913',
+                        cardBg: '#1A1224',
+                        roseGold: '#F472B6',
+                        roseGoldHover: '#EC4899',
+                        goldAccent: '#FBBF24',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti for Fireworks -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* Smooth Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F0913;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2D1B36;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4A2859;
+        }
+
+        /* Waterfall / Masonry Layout */
+        .masonry-grid {
+            column-count: 1;
+            column-gap: 1.25rem;
+        }
+        @media (min-width: 640px) {
+            .masonry-grid { column-count: 2; }
+        }
+        @media (min-width: 1024px) {
+            .masonry-grid { column-count: 3; }
+        }
+        @media (min-width: 1280px) {
+            .masonry-grid { column-count: 4; }
+        }
+
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Danmaku Bullet Comments Styling */
+        .danmaku-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 20;
+        }
+        .danmaku-item {
+            position: absolute;
+            white-space: nowrap;
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(4px);
+            padding: 4px 12px;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: danmakuMove 8s linear infinite;
+        }
+        @keyframes danmakuMove {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-150%); }
+        }
+    </style>
+</head>
+<body class="bg-romanticBg text-gray-100 min-h-screen font-sans antialiased selection:bg-roseGold selection:text-white relative overflow-x-hidden">
+
+    <!-- Glowing Background Atmosphere Effect -->
+    <div class="fixed inset-0 pointer-events-none z-0 opacity-40">
+        <div class="absolute -top-40 -left-40 w-96 h-96 bg-pink-600/30 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute top-1/3 -right-40 w-96 h-96 bg-purple-600/30 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+        <div class="absolute -bottom-40 left-1/3 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 4s;"></div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-40 bg-romanticBg/80 backdrop-blur-xl border-b border-white/10 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 via-purple-500 to-amber-400 flex items-center justify-center text-white shadow-lg shadow-pink-500/20 animate-float">
+                    <i data-lucide="cake" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                        <span>Birthday Special</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-normal">生贺礼物版</span>
+                    </h1>
+                    <p class="text-xs text-pink-300/80" id="header-subtitle">为星月准备的独家回忆录 ✨</p>
+                </div>
+            </div>
+
+            <!-- Controls (BGM Player & Fireworks Button) -->
+            <div class="flex items-center gap-3">
+                <button onclick="triggerFireworks()" class="px-3.5 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+                    <span class="hidden sm:inline">放烟花 🎉</span>
+                </button>
+                <button onclick="toggleAudio()" id="bgm-btn" class="px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-xs flex items-center gap-2 transition-all">
+                    <i data-lucide="music" id="music-icon" class="w-4 h-4"></i>
+                    <span id="music-text" class="hidden sm:inline">背景音乐</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hidden BGM Audio Element (Replace source with your background song) -->
+    <audio id="bgm-audio" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-beautiful-dream-493.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10 space-y-12">
+
+        <!-- Section 1: Hero Birthday Banner & Special Video Entry -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Heartfelt Birthday Card (Left 2 Columns) -->
+            <div class="lg:col-span-2 rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-pink-950/40 via-purple-950/30 to-cardBg border border-pink-500/20 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-pink-400 pointer-events-none">
+                    <i data-lucide="gift" class="w-64 h-64"></i>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 text-xs font-semibold">
+                        <i data-lucide="heart" class="w-3.5 h-3.5 fill-current text-pink-400"></i>
+                        <span>HAPPY BIRTHDAY TO YOU</span>
+                    </div>
+
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-purple-200 to-amber-200 tracking-tight leading-tight">
+                        祝 <span id="recipient-name" class="underline decoration-pink-500/50 decoration-wavy">星月</span> 生日快乐！🎂
+                    </h2>
+
+                    <p id="birthday-message" class="text-gray-300 text-sm sm:text-base leading-relaxed max-w-2xl">
+                        愿你的新一岁充满星光与温暖，所有的美好都如期而至。这是为你特别制作的生贺展示集，记录了那些闪闪发光的瞬间与回忆。
+                    </p>
+                </div>
+
+                <!-- Timer & Counter Widget -->
+                <div class="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="text-xs text-gray-400">相识相伴相知</div>
+                        <div class="text-base font-bold text-amber-300 flex items-center gap-1">
+                            <i data-lucide="clock" class="w-4 h-4"></i>
+                            <span id="days-count">1314</span> 天
+                        </div>
+                    </div>
+                    <button onclick="scrollToWaterfall()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-xs font-semibold shadow-lg shadow-pink-500/25 flex items-center gap-2 transition-all">
+                        <span>浏览展示瀑布流</span>
+                        <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Featured Video Portal Hero Card (Right 1 Column) -->
+            <div id="featured-video-card" class="rounded-3xl p-6 bg-cardBg border border-purple-500/30 shadow-2xl relative overflow-hidden group cursor-pointer flex flex-col justify-between" onclick="openFeaturedVideo()">
+                <!-- Poster Thumbnail background -->
+                <div class="absolute inset-0 z-0">
+                    <img id="featured-poster" src="https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1000&q=80" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-40 group-hover:opacity-60" alt="主打生贺视频封面" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-cardBg via-cardBg/60 to-transparent"></div>
+                </div>
+
+                <!-- Badge -->
+                <div class="relative z-10 flex items-center justify-between">
+                    <span class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md">
+                        <i data-lucide="sparkle" class="w-3.5 h-3.5 fill-current"></i>
+                        <span>主打生贺视频特辑</span>
+                    </span>
+                    <span class="text-xs text-purple-300 bg-black/40 px-2.5 py-1 rounded-md backdrop-blur-md">高清独家</span>
+                </div>
+
+                <!-- Center Glowing Play Button -->
+                <div class="relative z-10 my-8 flex items-center justify-center">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 text-white flex items-center justify-center shadow-2xl shadow-pink-500/50 group-hover:scale-110 transition-transform duration-300">
+                        <i data-lucide="play" class="w-8 h-8 fill-current ml-1"></i>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="relative z-10 space-y-1">
+                    <h3 id="featured-title" class="text-lg font-bold text-white group-hover:text-pink-300 transition-colors">🎬 专属生日纪念短片</h3>
+                    <p id="featured-desc" class="text-xs text-gray-300 line-clamp-2">点击直接进入影院模式播放生贺精选大片与视频集...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Waterfall Stream (瀑布流展示区) -->
+        <section id="waterfall-section" class="space-y-6">
+            
+            <!-- Filter & Search Bar -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-2 border-b border-white/10">
+                <!-- Tabs -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
+                    <button onclick="filterMedia('all')" class="filter-btn active px-4 py-2 rounded-full text-xs font-medium transition-all bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md shadow-pink-500/20">
+                        全部 All
+                    </button>
+                    <button onclick="filterMedia('video')" class="filter-btn px-4 py-2 rounded-full text-xs font-medium transition-all bg-white/5 text-gray-400 hover:text-white hover:bg-white/10">
+                        🎥 精彩视频 (Videos)
+                    </button>
+                    <button onclick="filterMedia('photo')" class="filter-btn px-4 py-2 rounded-full text-xs font-medium transition-all bg-white/5 text-gray-400 hover:text-white hover:bg-white/10">
+                        📷 美好瞬间 (Photos)
+                    </button>
+                    <button onclick="filterMedia('memory')" class="filter-btn px-4 py-2 rounded-full text-xs font-medium transition-all bg-white/5 text-gray-400 hover:text-white hover:bg-white/10">
+                        💌 独家回忆 (Memories)
+                    </button>
+                </div>
+
+                <!-- Info Counter -->
+                <div class="text-xs text-gray-400 flex items-center justify-between sm:justify-end gap-2">
+                    <span>已呈现 <strong id="visible-count" class="text-pink-300 font-bold">0</strong> 项贺礼内容</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Masonry Layout -->
+            <div id="media-grid" class="masonry-grid">
+                <!-- Media Cards dynamically loaded here -->
+            </div>
+
+            <!-- Load More & Infinite Scroll Indicator -->
+            <div class="py-8 text-center flex flex-col items-center justify-center space-y-3">
+                <button id="load-more-btn" onclick="loadMoreItems()" class="px-6 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-xs font-medium transition-all flex items-center gap-2 shadow-sm">
+                    <span>加载更多回忆片段...</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </button>
+                <span id="end-notice" class="text-xs text-gray-500 hidden">✨ 已经展示完全部精彩内容啦 ✨</span>
+            </div>
+        </section>
+
+        <!-- Section 3: Birthday Wish Wall & Interactive Firework Guestbook -->
+        <section class="rounded-3xl p-6 sm:p-8 bg-cardBg border border-white/10 space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i data-lucide="heart-handshake" class="w-5 h-5 text-pink-400"></i>
+                        <span>祝福留言墙 Wish Wall</span>
+                    </h3>
+                    <p class="text-xs text-gray-400 mt-1">留下一句美好的祝福，触发惊喜弹幕与礼花效果</p>
+                </div>
+
+                <button onclick="openWishModal()" class="px-4 py-2 rounded-xl bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/40 text-pink-300 text-xs font-semibold flex items-center gap-2 transition-all">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>发送生日祝福</span>
+                </button>
+            </div>
+
+            <!-- Preloaded Wishes Cards Container -->
+            <div id="wishes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Wishes dynamic content -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Interactive Lightbox & Video Player Modal -->
+    <div id="lightbox" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl hidden opacity-0 transition-opacity duration-300 flex items-center justify-center p-2 sm:p-6">
+        
+        <!-- Danmaku Overlay Container (for videos) -->
+        <div id="danmaku-layer" class="danmaku-container"></div>
+
+        <!-- Modal Close Button -->
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 z-50 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all">
+            <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+
+        <!-- Navigation Buttons -->
+        <button onclick="navigateLightbox(-1)" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-40 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all">
+            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+        </button>
+        <button onclick="navigateLightbox(1)" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-40 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all">
+            <i data-lucide="chevron-right" class="w-6 h-6"></i>
+        </button>
+
+        <!-- Lightbox Content Body -->
+        <div class="max-w-5xl max-h-[90vh] w-full flex flex-col items-center justify-center relative z-30 space-y-4">
+            
+            <div id="lightbox-media-wrapper" class="w-full h-[65vh] sm:h-[75vh] flex items-center justify-center rounded-2xl overflow-hidden bg-black/60 border border-white/10 relative">
+                <!-- Video or Image injected here -->
+            </div>
+
+            <!-- Media Caption & Controls -->
+            <div class="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-2">
+                <div>
+                    <h3 id="lightbox-title" class="text-base sm:text-lg font-bold text-white flex items-center gap-2"></h3>
+                    <p id="lightbox-desc" class="text-xs text-gray-400 mt-1"></p>
+                </div>
+
+                <!-- Extra interactive features for video (e.g. Add Danmaku Wish) -->
+                <div id="video-actions" class="hidden flex items-center gap-2">
+                    <button onclick="sendQuickDanmaku()" class="px-3 py-1.5 rounded-full bg-pink-500/20 hover:bg-pink-500/30 border border-pink-500/40 text-pink-300 text-xs flex items-center gap-1.5 transition-all">
+                        <i data-lucide="message-square-heart" class="w-3.5 h-3.5"></i>
+                        <span>发一条弹幕祝福 🎉</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Wish Modal -->
+    <div id="wish-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="max-w-md w-full rounded-2xl bg-cardBg border border-white/10 p-6 space-y-4 relative shadow-2xl">
+            <button onclick="closeWishModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h4 class="text-lg font-bold text-white flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
+                <span>送上你的生日祝福</span>
+            </h4>
+            <div class="space-y-3">
+                <input type="text" id="wish-sender" placeholder="你的名字 / 署名" class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-pink-500" />
+                <textarea id="wish-text" rows="3" placeholder="写下你想对TA说的祝福语..." class="w-full px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-pink-500"></textarea>
+            </div>
+            <button onclick="submitWish()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-semibold shadow-lg shadow-pink-500/25">
+                确认发送并放烟花 ✨
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPT SECTION: Configuration & Application Logic -->
+    <script>
+        /**
+         * ============================================================
+         * ⚙️ 配置文件说明 (CONFIGURATION & CONFIG DATA)
+         * 您可以在此直接修改或替换您自己的图片、视频链接、标题与描述！
+         * ============================================================
+         */
+
+        // 1. 贺卡与个人信息设置
+        const BIRTHDAY_CONFIG = {
+            recipientName: "星月", // 受赠人名字
+            subtitle: "为星月准备的独家生贺回忆录 ✨",
+            message: "愿你的新一岁充满星光与温暖，所有的美好都如期而至。这是为你特别制作的生贺展示集，记录了那些闪闪发光的瞬间与回忆。",
+            togetherDays: 1314, // 认识或相伴的天数
+            // 主打视频入口配置
+            featuredVideo: {
+                title: "🎬 专属生日纪念短片 2026",
+                desc: "特别定制的生贺重磅大片，点击开启大屏影院播放...",
+                poster: "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=1000&q=80",
+                // 视频文件地址 (.mp4) 或 iframe 嵌入
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-party-lights-in-a-room-41562-large.mp4"
+            }
+        };
+
+        // 2. 瀑布流媒体集数据 (Media Gallery Data)
+        // type: 'photo' | 'video' | 'memory'
+        const MEDIA_ITEMS = [
+            {
+                id: 1,
+                type: 'video',
+                category: 'video',
+                title: '🎉 祝星月生日快乐！特别Vlog',
+                desc: '高清生贺欢聚视频片段',
+                url: 'https://assets.mixkit.co/videos/preview/mixkit-hands-holding-sparklers-at-a-party-41563-large.mp4',
+                poster: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=800&q=80',
+                date: '2026-10-27',
+                tag: '视频特辑'
+            },
+            {
+                id: 2,
+                type: 'photo',
+                category: 'photo',
+                title: '🎂 许愿时刻与温暖烛光',
+                desc: '愿所有的愿望都能在这个美好的日子里实现。',
+                url: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=1000&q=80',
+                date: '2026-10-25',
+                tag: '美好瞬间'
+            },
+            {
+                id: 3,
+                type: 'photo',
+                category: 'memory',
+                title: '🌌 漫天星海与旅行回忆',
+                desc: '还记得那晚在山顶看到的星空，闪耀又迷人。',
+                url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=80',
+                date: '2026-08-15',
+                tag: '独家回忆'
+            },
+            {
+                id: 4,
+                type: 'video',
+                category: 'video',
+                title: '🌊 海浪与风的声音片段',
+                desc: '听听舒缓的海浪声，放松心情。',
+                url: 'https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4',
+                poster: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                date: '2026-07-20',
+                tag: '精彩视频'
+            },
+            {
+                id: 5,
+                type: 'photo',
+                category: 'photo',
+                title: '🌸 温暖的春日午后',
+                desc: '阳光穿过树叶的缝隙，留下斑驳的时光。',
+                url: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1000&q=80',
+                date: '2026-04-12',
+                tag: '美好瞬间'
+            },
+            {
+                id: 6,
+                type: 'photo',
+                category: 'memory',
+                title: '☕ 惬意的咖啡时光',
+                desc: '和你在一起聊天的下午总是过得特别快。',
+                url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1000&q=80',
+                date: '2026-02-14',
+                tag: '独家回忆'
+            }
+        ];
+
+        // 3. 预载的生日祝福语列表 (Preloaded Wishes)
+        let WISHES_DATA = [
+            { sender: '好友 小明', text: '星月生日快乐！愿你永远快乐自由，所求皆所愿！✨', time: '刚刚' },
+            { sender: '阿杰', text: '新的一岁也要继续发光发亮！生贺视频超赞！🎉', time: '10分钟前' },
+            { sender: '摄影师朋友', text: '🎂 祝你天天都有好心情，照片和视频都超美的！', time: '1小时前' }
+        ];
+
+        // 4. 弹幕预设文字 (Danmaku Wishes)
+        const DANMAKU_PRESETS = [
+            "🎂 祝星月生日快乐！",
+            "✨ 愿你永远快乐，星光璀璨！",
+            "🎉 Happy Birthday!! 快乐每一天！",
+            "💖 永远十八岁！要一直开心！",
+            "🌸 所有的美好都属于你！"
+        ];
+
+        /* ==================== STATE VARIABLES ==================== */
+        let currentFilter = 'all';
+        let currentIndex = 0;
+        let filteredItems = [];
+        let isAudioPlaying = false;
+        let danmakuInterval = null;
+
+        /* ==================== INITIALIZATION ==================== */
+        document.addEventListener('DOMContentLoaded', () => {
+            initAppInfo();
+            renderGrid();
+            renderWishes();
+            lucide.createIcons();
+
+            // Keyboard navigation for Lightbox
+            document.addEventListener('keydown', (e) => {
+                const lightbox = document.getElementById('lightbox');
+                if (!lightbox.classList.contains('hidden')) {
+                    if (e.key === 'Escape') closeLightbox();
+                    if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                    if (e.key === 'ArrowRight') navigateLightbox(1);
+                }
+            });
+        });
+
+        // Populate Config Info
+        function initAppInfo() {
+            document.getElementById('recipient-name').textContent = BIRTHDAY_CONFIG.recipientName;
+            document.getElementById('header-subtitle').textContent = BIRTHDAY_CONFIG.subtitle;
+            document.getElementById('birthday-message').textContent = BIRTHDAY_CONFIG.message;
+            document.getElementById('days-count').textContent = BIRTHDAY_CONFIG.togetherDays;
+
+            // Featured Card Config
+            document.getElementById('featured-title').textContent = BIRTHDAY_CONFIG.featuredVideo.title;
+            document.getElementById('featured-desc').textContent = BIRTHDAY_CONFIG.featuredVideo.desc;
+            document.getElementById('featured-poster').src = BIRTHDAY_CONFIG.featuredVideo.poster;
+        }
+
+        /* ==================== WATERFALL / MASONRY LOGIC ==================== */
+        function renderGrid() {
+            const grid = document.getElementById('media-grid');
+            grid.innerHTML = '';
+
+            filteredItems = currentFilter === 'all'
+                ? MEDIA_ITEMS
+                : MEDIA_ITEMS.filter(item => item.category === currentFilter);
+
+            document.getElementById('visible-count').textContent = filteredItems.length;
+
+            filteredItems.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'masonry-item animate-fade-in group relative rounded-2xl overflow-hidden bg-cardBg border border-white/10 shadow-lg cursor-pointer transform transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-pink-500/40';
+                card.onclick = () => openLightbox(index);
+
+                let mediaContent = '';
+                if (item.type === 'video') {
+                    mediaContent = `
+                        <div class="relative w-full">
+                            <img src="${item.poster || 'https://placehold.co/600x400/1A1224/FFF?text=Video'}" alt="${item.title}" loading="lazy" class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" />
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity group-hover:bg-black/20">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center shadow-lg transform transition-transform group-hover:scale-110">
+                                    <i data-lucide="play" class="w-6 h-6 fill-current ml-0.5"></i>
+                                </div>
+                            </div>
+                            <span class="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-semibold text-pink-300 border border-white/10">
+                                🎬 视频
+                            </span>
+                        </div>
+                    `;
+                } else {
+                    mediaContent = `
+                        <div class="relative w-full">
+                            <img src="${item.url}" alt="${item.title}" loading="lazy" class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.src='https://placehold.co/600x400/1A1224/FFF?text=Image+Failed'" />
+                            <span class="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-semibold text-purple-300 border border-white/10">
+                                📷 照片
+                            </span>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    ${mediaContent}
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                        <span class="text-[10px] text-pink-300 font-semibold mb-1">${item.tag || item.date}</span>
+                        <h4 class="text-sm font-bold text-white leading-tight">${item.title}</h4>
+                        <p class="text-xs text-gray-300 mt-1 line-clamp-2">${item.desc}</p>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Filter Function
+        function filterMedia(category) {
+            currentFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-gradient-to-r', 'from-pink-500', 'to-purple-600', 'text-white', 'shadow-md');
+                btn.classList.add('bg-white/5', 'text-gray-400');
+            });
+            event.currentTarget.classList.remove('bg-white/5', 'text-gray-400');
+            event.currentTarget.classList.add('bg-gradient-to-r', 'from-pink-500', 'to-purple-600', 'text-white', 'shadow-md');
+            renderGrid();
+        }
+
+        function scrollToWaterfall() {
+            document.getElementById('waterfall-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function loadMoreItems() {
+            // Simulated continuous infinite scroll effect
+            const btn = document.getElementById('load-more-btn');
+            const notice = document.getElementById('end-notice');
+            btn.innerHTML = `<span>加载中...</span>`;
+            setTimeout(() => {
+                btn.classList.add('hidden');
+                notice.classList.remove('hidden');
+            }, 800);
+        }
+
+        /* ==================== LIGHTBOX & CINEMA VIDEO PORTAL ==================== */
+        function openLightbox(index) {
+            currentIndex = index;
+            const lightbox = document.getElementById('lightbox');
+            updateLightboxContent();
+
+            lightbox.classList.remove('hidden');
+            setTimeout(() => lightbox.classList.remove('opacity-0'), 10);
+        }
+
+        function openFeaturedVideo() {
+            const container = document.getElementById('lightbox-media-wrapper');
+            const title = document.getElementById('lightbox-title');
+            const desc = document.getElementById('lightbox-desc');
+            const videoActions = document.getElementById('video-actions');
+
+            title.innerHTML = `<span>${BIRTHDAY_CONFIG.featuredVideo.title}</span>`;
+            desc.textContent = BIRTHDAY_CONFIG.featuredVideo.desc;
+            videoActions.classList.remove('hidden');
+
+            container.innerHTML = `
+                <video controls autoplay class="w-full h-full object-contain">
+                    <source src="${BIRTHDAY_CONFIG.featuredVideo.videoUrl}" type="video/mp4">
+                    您的浏览器不支持视频播放。
+                </video>
+            `;
+
+            startDanmaku();
+
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('hidden');
+            setTimeout(() => lightbox.classList.remove('opacity-0'), 10);
+        }
+
+        function updateLightboxContent() {
+            const item = filteredItems[currentIndex];
+            const container = document.getElementById('lightbox-media-wrapper');
+            const title = document.getElementById('lightbox-title');
+            const desc = document.getElementById('lightbox-desc');
+            const videoActions = document.getElementById('video-actions');
+
+            title.innerHTML = `<span>${item.title}</span>`;
+            desc.textContent = `${item.date} — ${item.desc}`;
+
+            if (item.type === 'video') {
+                videoActions.classList.remove('hidden');
+                container.innerHTML = `
+                    <video controls autoplay class="w-full h-full object-contain">
+                        <source src="${item.url}" type="video/mp4">
+                        您的浏览器不支持视频播放。
+                    </video>
+                `;
+                startDanmaku();
+            } else {
+                videoActions.classList.add('hidden');
+                stopDanmaku();
+                container.innerHTML = `
+                    <img src="${item.url}" alt="${item.title}" class="w-full h-full object-contain" />
+                `;
+            }
+        }
+
+        function navigateLightbox(dir) {
+            if (!filteredItems.length) return;
+            currentIndex = (currentIndex + dir + filteredItems.length) % filteredItems.length;
+            updateLightboxContent();
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.add('opacity-0');
+            stopDanmaku();
+            setTimeout(() => {
+                lightbox.classList.add('hidden');
+                document.getElementById('lightbox-media-wrapper').innerHTML = '';
+            }, 300);
+        }
+
+        /* ==================== DANMAKU (弹幕) EFFECT ==================== */
+        function startDanmaku() {
+            stopDanmaku();
+            const layer = document.getElementById('danmaku-layer');
+            layer.innerHTML = '';
+            
+            // Spawn initial preset comments
+            DANMAKU_PRESETS.forEach((msg, idx) => {
+                setTimeout(() => createDanmakuItem(msg), idx * 1500);
+            });
+
+            danmakuInterval = setInterval(() => {
+                const randomMsg = DANMAKU_PRESETS[Math.floor(Math.random() * DANMAKU_PRESETS.length)];
+                createDanmakuItem(randomMsg);
+            }, 3500);
+        }
+
+        function stopDanmaku() {
+            if (danmakuInterval) clearInterval(danmakuInterval);
+            document.getElementById('danmaku-layer').innerHTML = '';
+        }
+
+        function createDanmakuItem(text) {
+            const layer = document.getElementById('danmaku-layer');
+            const el = document.createElement('div');
+            el.className = 'danmaku-item';
+            el.textContent = text;
+            el.style.top = `${Math.floor(Math.random() * 60) + 10}%`;
+            layer.appendChild(el);
+
+            setTimeout(() => el.remove(), 8000);
+        }
+
+        function sendQuickDanmaku() {
+            const text = prompt("发送一条实时生贺弹幕：", "🎂 祝星月生日快乐！");
+            if (text) {
+                createDanmakuItem("✨ " + text);
+                triggerFireworks();
+            }
+        }
+
+        /* ==================== WISH WALL & FIREWORKS ==================== */
+        function renderWishes() {
+            const grid = document.getElementById('wishes-grid');
+            grid.innerHTML = '';
+            WISHES_DATA.forEach(w => {
+                const card = document.createElement('div');
+                card.className = 'p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2 relative overflow-hidden';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between text-xs text-pink-300">
+                        <span class="font-bold flex items-center gap-1"><i data-lucide="user" class="w-3.5 h-3.5"></i> ${w.sender}</span>
+                        <span class="text-gray-500">${w.time}</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-gray-200">${w.text}</p>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function openWishModal() {
+            document.getElementById('wish-modal').classList.remove('hidden');
+        }
+
+        function closeWishModal() {
+            document.getElementById('wish-modal').classList.add('hidden');
+        }
+
+        function submitWish() {
+            const sender = document.getElementById('wish-sender').value.trim() || '热心好友';
+            const text = document.getElementById('wish-text').value.trim();
+
+            if (!text) {
+                alert('请填写祝愿语哦！');
+                return;
+            }
+
+            WISHES_DATA.unshift({ sender, text, time: '刚刚' });
+            renderWishes();
+            closeWishModal();
+            triggerFireworks();
+
+            document.getElementById('wish-sender').value = '';
+            document.getElementById('wish-text').value = '';
+        }
+
+        // Trigger Canvas Confetti Fireworks
+        function triggerFireworks() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        /* ==================== BGM AUDIO PLAYER ==================== */
+        function toggleAudio() {
+            const audio = document.getElementById('bgm-audio');
+            const icon = document.getElementById('music-icon');
+            const text = document.getElementById('music-text');
+
+            if (isAudioPlaying) {
+                audio.pause();
+                icon.setAttribute('data-lucide', 'music');
+                text.textContent = '背景音乐';
+            } else {
+                audio.play().then(() => {
+                    icon.setAttribute('data-lucide', 'disc');
+                    text.textContent = '播放中 🎶';
+                }).catch(() => {
+                    alert('请手动允许浏览器播放音乐');
+                });
+            }
+            isAudioPlaying = !isAudioPlaying;
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
